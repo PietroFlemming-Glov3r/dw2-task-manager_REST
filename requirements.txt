@@ -1,0 +1,10 @@
+asgiref==3.8.1
+Django==5.1.5
+djangorestframework==3.15.2
+sqlparse==0.5.3
+
+#Para Baixar as dependencias
+#pip install -r requirements.txt
+
+#Para Atualizar as dependencias
+#pip install upgrade-requirements upgrade-requirements
