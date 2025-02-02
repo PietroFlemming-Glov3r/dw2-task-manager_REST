@@ -126,5 +126,5 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # config/settings.py
-LOGIN_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = 'tasks'
 LOGOUT_REDIRECT_URL = 'home'
