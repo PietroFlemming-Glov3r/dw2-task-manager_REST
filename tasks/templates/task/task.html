@@ -1,0 +1,16 @@
+{% extends "tasks/base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Suas Tarefas</h2>
+    <input type="text" placeholder="Buscar tarefa..." class="form-control mb-3">
+    <button class="btn btn-info">Filtrar</button>
+    <button class="btn btn-warning">Ordenar</button>
+    <ul class="list-group mt-3">
+        {% for tarefa in tarefas %}
+            <li class="list-group-item">{{ tarefa.nome }}</li>
+        {% empty %}
+            <li class="list-group-item">Nenhuma tarefa encontrada.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

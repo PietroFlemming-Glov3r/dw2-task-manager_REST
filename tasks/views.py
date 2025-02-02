@@ -28,3 +28,18 @@ class TaskViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    from django.shortcuts import render
+
+    def home(request):
+        return render(request, "tasks/home.html")
+
+    def login_view(request):
+        return render(request, "tasks/login.html")
+
+    def register_view(request):
+        return render(request, "tasks/register.html")
+
+    def tasks_view(request):
+        tarefas = [{"nome": "Fazer compras"}, {"nome": "Estudar Django"}]  # Exemplo
+        return render(request, "tasks/tasks.html", {"tarefas": tarefas})
