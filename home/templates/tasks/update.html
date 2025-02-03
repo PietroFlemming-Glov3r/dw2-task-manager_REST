@@ -13,10 +13,10 @@
         <div class="form-group col-md-6">
             <label for="tags-{{ task.id }}">Tags</label>
             <select class="form-control form-control-sm" id="tags-{{ task.id }}" name="tags" required>
-                <option value="trabalho" {% if task.tags == 'Trabalho' %}selected{% endif %}>Trabalho</option>
-                <option value="pessoal" {% if task.tags == 'Pessoal' %}selected{% endif %}>Pessoal</option>
-                <option value="estudo" {% if task.tags == 'Estudo' %}selected{% endif %}>Estudo</option>
-                <option value="outro" {% if task.tags == 'Outro' %}selected{% endif %}>Outro</option>
+                <option value="Trabalho" {% if task.tags == 'Trabalho' %}selected{% endif %}>Trabalho</option>
+                <option value="Pessoal" {% if task.tags == 'Pessoal' %}selected{% endif %}>Pessoal</option>
+                <option value="Estudo" {% if task.tags == 'Estudo' %}selected{% endif %}>Estudo</option>
+                <option value="Outro" {% if task.tags == 'Outro' %}selected{% endif %}>Outro</option>
             </select>
         </div>
         <div class="form-group col-md-6">

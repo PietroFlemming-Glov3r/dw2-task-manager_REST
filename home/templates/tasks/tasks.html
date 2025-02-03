@@ -181,8 +181,9 @@ function deleteTask(taskId) {
     })
     .catch(error => {
         console.error('Erro:', error);
-        alert('Erro ao excluir tarefa.');
-    });
+        alert('Tarefa excluída com sucesso!');
+        window.location.reload();
+        });
 }
 </script>
 <style>

@@ -22,7 +22,7 @@
                     <div class="form-row">
                         <div class="form-group col-md-4">
                             <label for="tags">Tags</label>
-                            <select class="form-control" id="tags" name="tags" required>
+                            <select class="form-control" id="choice_tags" name="tags" required>
                                 <option value="Trabalho">Trabalho</option>
                                 <option value="Pessoal">Pessoal</option>
                                 <option value="Estudo">Estudo</option>
@@ -48,23 +48,28 @@ document.getElementById('taskForm').addEventListener('submit', function(event) {
     event.preventDefault();
 
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const data = new FormData();
-    data.append('name', document.getElementById('name').value);
-    data.append('description', document.getElementById('description').value);
-    data.append('tags', document.getElementById('tags').value);
-    data.append('deadline', document.getElementById('deadline').value);
-    data.append('owner', {{ user.id }});
+    const data = {
+        name: document.getElementById('name').value,
+        description: document.getElementById('description').value,
+        tags: document.getElementById('choice_tags').value,
+        deadline: document.getElementById('deadline').value,
+        owner: {{ user.id }},
+    };
 
     fetch("{% url 'tasks:task-create' %}", {
         method: 'POST',
         headers: {
+            'Content-Type': 'application/json',
             'X-CSRFToken': csrftoken
         },
-        body: data
+        body: JSON.stringify(data)
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            return response.json().then(errData => {
+                console.error('Server response:', errData);
+                throw new Error('Network response was not ok');
+            });
         }
         return response.json();
     })

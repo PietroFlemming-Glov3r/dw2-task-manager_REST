@@ -1,3 +1,4 @@
+import logging
 from django.shortcuts import render
 from rest_framework import generics, viewsets, filters
 from .models import Task
@@ -8,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 class TaskList(generics.ListCreateAPIView):
-    queryset = Task.objects.all() 
+    queryset = Task.objects.all().order_by('id')  # Add default ordering
     serializer_class = TaskSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     ordering_fields = ['name']
@@ -53,3 +54,8 @@ class TaskUpdate(generics.UpdateAPIView):
 class TaskDelete(generics.DestroyAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({'success': True}, status=status.HTTP_204_NO_CONTENT)
