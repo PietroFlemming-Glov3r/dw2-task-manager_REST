@@ -1,0 +1,74 @@
+{% block taskUpdate %}
+<form id="taskUpdateForm-{{ task.id }}" method="post" class="border p-3 mb-3">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="name-{{ task.id }}">Nome</label>
+        <input type="text" class="form-control form-control-sm" id="name-{{ task.id }}" name="name" value="{{ task.name }}" required>
+    </div>
+    <div class="form-group">
+        <label for="description-{{ task.id }}">Descrição</label>
+        <textarea class="form-control form-control-sm" id="description-{{ task.id }}" name="description" required>{{ task.description }}</textarea>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label for="tags-{{ task.id }}">Tags</label>
+            <select class="form-control form-control-sm" id="tags-{{ task.id }}" name="tags" required>
+                <option value="trabalho" {% if task.tags == 'Trabalho' %}selected{% endif %}>Trabalho</option>
+                <option value="pessoal" {% if task.tags == 'Pessoal' %}selected{% endif %}>Pessoal</option>
+                <option value="estudo" {% if task.tags == 'Estudo' %}selected{% endif %}>Estudo</option>
+                <option value="outro" {% if task.tags == 'Outro' %}selected{% endif %}>Outro</option>
+            </select>
+        </div>
+        <div class="form-group col-md-6">
+            <label for="deadline-{{ task.id }}">Prazo</label>
+            <input type="date" class="form-control form-control-sm" id="deadline-{{ task.id }}" name="deadline" value="{{ task.deadline }}" required>
+        </div>
+    </div>
+    <button type="submit" form="taskUpdateForm-{{ task.id }}" class="btn btn-primary btn-sm mt-3"><i class="bi bi-floppy-fill"></i></button>
+</form>
+
+<script>
+document.querySelectorAll('[id^="taskUpdateForm-"]').forEach(form => {
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const taskId = this.id.split('-')[1];
+        const data = {
+            name: document.getElementById('name-' + taskId).value,
+            description: document.getElementById('description-' + taskId).value,
+            tags: document.getElementById('tags-' + taskId).value,
+            deadline: document.getElementById('deadline-' + taskId).value,
+            owner: {{ user.id }},
+        };
+
+        fetch("{% url 'tasks:task-update' task.id %}".replace('task.id', taskId), {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.id) {
+                alert('Tarefa atualizada com sucesso!');
+                window.location.href = '/your-tasks/';
+            } else {
+                alert('Erro ao atualizar tarefa.');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao atualizar tarefa.');
+        });
+    });
+});
+</script>
+{% endblock %}

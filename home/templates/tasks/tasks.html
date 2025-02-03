@@ -1,0 +1,210 @@
+{% extends "tasks/base.html" %}
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Suas Tarefas</h2>
+        <button class="btn btn-info" id="showFilterButton"><i class="bi bi-tools"> Filtrar</i></button>
+    </div>
+    <div id="filterOverlay" class="overlay" style="display: none;">
+        <div class="overlay-content">
+            <form method="get" id="filterForm" class="form-inline mb-2">
+                <div class="form-row">
+                    <div class="col-12 mb-3">
+                        <input type="text" name="name" placeholder="Buscar tarefa..." class="form-control w-100" value="{{ query_params.name }}">
+                    </div>
+                    <div class="col-auto mb-3">
+                        <label for="tags" class="form-label">Tags</label>
+                        <select name="tags" id="tags" class="form-control form-control-sm">
+                            <option value="">Todos</option>
+                            <option value="Trabalho" {% if query_params.tags == "Trabalho" %}selected{% endif %}>Trabalho</option>
+                            <option value="Pessoal" {% if query_params.tags == "Pessoal" %}selected{% endif %}>Pessoal</option>
+                            <option value="Estudo" {% if query_params.tags == "Estudo" %}selected{% endif %}>Estudo</option>
+                            <option value="Outro" {% if query_params.tags == "Outro" %}selected{% endif %}>Outro</option>
+                        </select>
+                    </div>
+                    <div class="col-auto mb-3">
+                        <label for="ordering" class="form-label">Ordenar por</label>
+                        <select name="ordering" id="ordering" class="form-control form-control-sm">
+                            <option value="">Ordenar por</option>
+                            <option value="name" {% if query_params.ordering == "name" %}selected{% endif %}>Nome</option>
+                            <option value="deadline" {% if query_params.ordering == "deadline" %}selected{% endif %}>Data limite</option>
+                        </select>
+                    </div>
+                    <div class="col-auto mb-3 align-self-end">
+                        <button type="submit" class="btn btn-info">Filtrar</button>
+                        <button type="button" class="btn btn-secondary" id="closeFilterButton">Fechar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <button class="btn btn-success mt-3" id="showFormButton"><i class="bi bi-plus-square"> Criar Tarefa</i></button>
+    <div id="formContainer" class="mt-3" style="display: none;">
+        {% include 'tasks/create.html' %}
+    </div>
+    <div class="row mt-3">
+        {% for tarefa in tarefas %}
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ tarefa.name|default:"Nome não disponível" }}</h5>
+                    <p class="card-text">{{ tarefa.description|default:"Descrição não disponível" }}</p>
+                    <span class="badge bg-primary">{{ tarefa.tags|default:"Tag não disponível" }}</span>
+                    <small class="text-muted">Data limite: {{ tarefa.deadline|date:"d/m/Y" }}</small>
+                    <div class="mt-2">
+                        <button class="btn btn-warning btn-sm update-button" data-task-id="{{ tarefa.id }}">
+                            <i class="bi bi-pencil-square"> Editar</i>
+                        </button>
+                        <div id="updateFormContainer-{{ tarefa.id }}" class="mt-2" style="display: none;">
+                            <form id="taskUpdateForm-{{ tarefa.id }}" method="post" class="border p-3 mb-3">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="name-{{ tarefa.id }}">Nome</label>
+                                    <input type="text" class="form-control form-control-sm" id="name-{{ tarefa.id }}" name="name" value="{{ tarefa.name }}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="description-{{ tarefa.id }}">Descrição</label>
+                                    <textarea class="form-control form-control-sm" id="description-{{ tarefa.id }}" name="description" required>{{ tarefa.description }}</textarea>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label for="tags-{{ tarefa.id }}">Tags</label>
+                                        <select class="form-control form-control-sm" id="tags-{{ tarefa.id }}" name="tags" required>
+                                            <option value="Trabalho" {% if tarefa.tags == "Trabalho" %}selected{% endif %}>Trabalho</option>
+                                            <option value="Pessoal" {% if tarefa.tags == "Pessoal" %}selected{% endif %}>Pessoal</option>
+                                            <option value="Estudo" {% if tarefa.tags == "Estudo" %}selected{% endif %}>Estudo</option>
+                                            <option value="Outro" {% if tarefa.tags == "Outro" %}selected{% endif %}>Outro</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="deadline-{{ tarefa.id }}">Prazo</label>
+                                        <input type="date" class="form-control form-control-sm" id="deadline-{{ tarefa.id }}" name="deadline" value="{{ tarefa.deadline }}" required>
+                                    </div>
+                                </div>
+                                <button type="submit" form="taskUpdateForm-{{ tarefa.id }}" class="btn btn-primary btn-sm mt-3">Atualizar Tarefa</button>
+                            </form>
+                        </div>
+                        <button class="btn btn-danger btn-sm" onclick="deleteTask({{ tarefa.id }})">
+                            <i class="bi bi-fire"> Excluir</i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-warning">Nenhuma tarefa encontrada.</div>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="d-flex justify-content-center">
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if tarefas.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% if query_params.name %}name={{ query_params.name }}&{% endif %}{% if query_params.tags %}tags={{ query_params.tags }}&{% endif %}{% if query_params.ordering %}ordering={{ query_params.ordering }}&{% endif %}page={{ tarefas.previous_page_number }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+                {% for num in tarefas.paginator.page_range %}
+                <li class="page-item {% if tarefas.number == num %}active{% endif %}">
+                    <a class="page-link" href="?{% if query_params.name %}name={{ query_params.name }}&{% endif %}{% if query_params.tags %}tags={{ query_params.tags }}&{% endif %}{% if query_params.ordering %}ordering={{ query_params.ordering }}&{% endif %}page={{ num }}">{{ num }}</a>
+                </li>
+                {% endfor %}
+                {% if tarefas.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% if query_params.name %}name={{ query_params.name }}&{% endif %}{% if query_params.tags %}tags={{ query_params.tags }}&{% endif %}{% if query_params.ordering %}ordering={{ query_params.ordering }}&{% endif %}page={{ tarefas.next_page_number }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<script>
+document.getElementById('showFormButton').addEventListener('click', function() {
+    const formContainer = document.getElementById('formContainer');
+    if (formContainer.style.display === 'none') {
+        formContainer.style.display = 'block';
+    } else {
+        formContainer.style.display = 'none';
+    }
+});
+
+document.getElementById('showFilterButton').addEventListener('click', function() {
+    const filterOverlay = document.getElementById('filterOverlay');
+    filterOverlay.style.display = 'flex';
+});
+
+document.getElementById('closeFilterButton').addEventListener('click', function() {
+    const filterOverlay = document.getElementById('filterOverlay');
+    filterOverlay.style.display = 'none';
+});
+
+document.querySelectorAll('.update-button').forEach(button => {
+    button.addEventListener('click', function() {
+        const taskId = this.getAttribute('data-task-id');
+        const formContainer = document.getElementById(`updateFormContainer-${taskId}`);
+        if (formContainer.style.display === 'none') {
+            formContainer.style.display = 'block';
+        } else {
+            formContainer.style.display = 'none';
+        }
+    });
+});
+
+function deleteTask(taskId) {
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    fetch(`/tasks/delete/${taskId}/`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRFToken': csrftoken
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            alert('Tarefa excluída com sucesso!');
+            window.location.reload();
+        } else {
+            alert('Erro ao excluir tarefa.');
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao excluir tarefa.');
+    });
+}
+</script>
+<style>
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+.overlay-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    width: 80%;
+    max-width: 500px;
+}
+</style>
+{% endblock %}
