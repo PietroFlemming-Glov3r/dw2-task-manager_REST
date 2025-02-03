@@ -45,8 +45,9 @@
     <div class="row mt-3">
         {% for tarefa in tarefas %}
         <div class="col-md-6 mb-3">
-            <div class="card">
-                <div class="card-body">
+            <div class="card {% if tarefa.done %}bg-success bg-opacity-25{% endif %}" id="task-card-{{ tarefa.id }}">
+                <div class="card-body position-relative">
+                    <input type="checkbox" class="form-check-input position-absolute top-0 end-0 m-3 custom-checkbox" id="done-{{ tarefa.id }}" {% if tarefa.done %}checked{% endif %} onclick="toggleDone({{ tarefa.id }})">
                     <h5 class="card-title">{{ tarefa.name|default:"Nome não disponível" }}</h5>
                     <p class="card-text">{{ tarefa.description|default:"Descrição não disponível" }}</p>
                     <span class="badge bg-primary">{{ tarefa.tags|default:"Tag não disponível" }}</span>
@@ -173,7 +174,6 @@ function deleteTask(taskId) {
     })
     .then(data => {
         if (data.success) {
-            alert('Tarefa excluída com sucesso!');
             window.location.reload();
         } else {
             alert('Erro ao excluir tarefa.');
@@ -181,9 +181,45 @@ function deleteTask(taskId) {
     })
     .catch(error => {
         console.error('Erro:', error);
-        alert('Tarefa excluída com sucesso!');
         window.location.reload();
         });
+}
+
+function toggleDone(taskId) {
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const checkbox = document.getElementById(`done-${taskId}`);
+    const done = checkbox.checked;
+
+    fetch(`/tasks/update/${taskId}/`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({ done: done })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.id) {
+            const taskCard = document.getElementById(`task-card-${taskId}`);
+            if (done) {
+                taskCard.classList.add('bg-success', 'bg-opacity-25');
+            } else {
+                taskCard.classList.remove('bg-success', 'bg-opacity-25');
+            }
+        } else {
+            alert('Erro ao atualizar tarefa.');
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao atualizar tarefa.');
+    });
 }
 </script>
 <style>
@@ -206,6 +242,12 @@ function deleteTask(taskId) {
     border-radius: 5px;
     width: 80%;
     max-width: 500px;
+}
+
+.custom-checkbox {
+    width: 20px;
+    height: 20px;
+    color: #28a745;  /* Bootstrap's success color */
 }
 </style>
 {% endblock %}

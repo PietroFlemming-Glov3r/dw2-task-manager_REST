@@ -51,6 +51,9 @@ class TaskUpdate(generics.UpdateAPIView):
         self.perform_update(serializer)
         return Response(serializer.data)
 
+    def perform_update(self, serializer):
+        serializer.save(done=self.request.data.get('done', serializer.instance.done))
+
 class TaskDelete(generics.DestroyAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer

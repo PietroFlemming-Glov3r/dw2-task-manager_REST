@@ -58,7 +58,6 @@ document.querySelectorAll('[id^="taskUpdateForm-"]').forEach(form => {
         })
         .then(data => {
             if (data.id) {
-                alert('Tarefa atualizada com sucesso!');
                 window.location.href = '/your-tasks/';
             } else {
                 alert('Erro ao atualizar tarefa.');

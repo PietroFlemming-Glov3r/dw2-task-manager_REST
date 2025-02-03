@@ -75,7 +75,6 @@ document.getElementById('taskForm').addEventListener('submit', function(event) {
     })
     .then(data => {
         if (data.id) {
-            alert('Tarefa criada com sucesso!');
             window.location.href = '/your-tasks/';
         } else {
             alert('Erro ao criar tarefa.');
