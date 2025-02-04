@@ -1,0 +1,89 @@
+{% block taskCreate %}
+<div class="modal fade show" id="taskModal" tabindex="-1" role="dialog" aria-labelledby="taskModalLabel" aria-hidden="true" style="display: block; background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="taskModalLabel">Criar Nova Tarefa</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="window.location.href='/your-tasks/'">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="taskForm" method="post" action="{% url 'tasks:task-create' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="name">Nome</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Descrição</label>
+                        <textarea class="form-control" id="description" name="description" required></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="tags">Tags</label>
+                            <select class="form-control" id="choice_tags" name="tags" required>
+                                <option value="Trabalho">Trabalho</option>
+                                <option value="Pessoal">Pessoal</option>
+                                <option value="Estudo">Estudo</option>
+                                <option value="Outro">Outro</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="deadline">Prazo</label>
+                            <input type="date" class="form-control" id="deadline" name="deadline" required>
+                        </div>
+                        <div class="form-group col-md-4 align-self-end">
+                            <button type="submit" class="btn btn-primary mt-3">Criar Tarefa</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('taskForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const data = {
+        name: document.getElementById('name').value,
+        description: document.getElementById('description').value,
+        tags: document.getElementById('choice_tags').value,
+        deadline: document.getElementById('deadline').value,
+        owner: {{ user.id }},
+    };
+
+    fetch("{% url 'tasks:task-create' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(errData => {
+                console.error('Server response:', errData);
+                throw new Error('Network response was not ok');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.id) {
+            window.location.href = '/your-tasks/';
+        } else {
+            alert('Erro ao criar tarefa.');
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao criar tarefa.');
+    });
+});
+</script>
+{% endblock %}
